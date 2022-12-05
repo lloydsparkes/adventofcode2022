@@ -2,7 +2,7 @@
 
 public class Part2 : IDayPartJob
 {
-    public int RunPart(string[] inputLines)
+    public object RunPart(string[] inputLines)
     {
         return inputLines.Select(ProcessLine).Sum();
     }

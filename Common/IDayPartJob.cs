@@ -2,5 +2,5 @@
 
 public interface IDayPartJob
 {
-    int RunPart(string[] inputLines);
+    object RunPart(string[] inputLines);
 }

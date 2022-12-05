@@ -9,7 +9,7 @@ public class Part2 : IDayPartJob
         Win
     }
     
-    public int RunPart(string[] inputLines)
+    public object RunPart(string[] inputLines)
     {
         int totalScore = 0;
 

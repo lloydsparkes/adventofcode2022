@@ -2,7 +2,7 @@
 
 public class Part2 : IDayPartJob
 {
-    public int RunPart(string[] inputLines)
+    public object RunPart(string[] inputLines)
     {
         int currentCount = 0;
         var elfSupplies = new List<int>();

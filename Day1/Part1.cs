@@ -2,7 +2,7 @@
 
 public class Part1 : IDayPartJob
 {
-    public int RunPart(string[] inputLines)
+    public object RunPart(string[] inputLines)
     {
         int currentHighest = 0, currentCount = 0;
 
