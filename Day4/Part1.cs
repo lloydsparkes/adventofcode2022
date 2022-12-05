@@ -1,17 +1,4 @@
-﻿using System.Security.Cryptography;
-
-var inputLines = File.ReadAllLines("input.txt");
-
-Console.WriteLine("Result: " + inputLines.Select(ProcessLine).Sum());
-
-int ProcessLine(string line)
-{
-    var bits = line.Split(',');
-    var rangeA = Range.ProcessText(bits[0]);
-    var rangeB = Range.ProcessText(bits[1]);
-
-    return rangeA.AnyOverlap(rangeB) ? 1 : 0;
-}
+﻿using Common;
 
 public record Range(int Start, int End)
 {
@@ -20,7 +7,7 @@ public record Range(int Start, int End)
     {
         return Start <= other.Start && End >= other.End;
     }
-
+    
     public bool AnyOverlap(Range other)
     {
         return (Start <= other.Start && End >= other.Start)
@@ -32,5 +19,22 @@ public record Range(int Start, int End)
     {
         var bits = input.Split('-');
         return new Range(int.Parse(bits[0]), int.Parse(bits[1]));
+    }
+}
+
+public class Part1 : IDayPartJob
+{
+    public int RunPart(string[] inputLines)
+    {
+        return inputLines.Select(ProcessLine).Sum();
+    }
+    
+    int ProcessLine(string line)
+    {
+        var bits = line.Split(',');
+        var rangeA = Range.ProcessText(bits[0]);
+        var rangeB = Range.ProcessText(bits[1]);
+
+        return rangeA.FullyContains(rangeB) || rangeB.FullyContains(rangeA) ? 1 : 0;
     }
 }
