@@ -1,18 +1,24 @@
 ﻿using System.ComponentModel;
 using Common;
 
-public record Point(int X, int Y)
-{
-    public bool IsTouching()
-    {
-        return (Math.Abs(X) == 1 || X == 0) && (Math.Abs(Y) == 1 || Y == 0);
-    }
-}
+public record Point(int X, int Y);
 
 public class State
 {
-    public Point Head { get; set; } = new Point(0, 0);
-    public Point Tail { get; set; } = new Point(0, 0);
+    public Point Head { 
+        get => Rope[0];
+        set { Rope[0] = value; }
+    }
+    public Point[] Rope { get; set; }
+
+    public State(int length = 2)
+    {
+        Rope = new Point[length];
+        for (int i = 0; i < length; i++)
+        {
+            Rope[i] = new Point(0, 0);
+        }
+    }
 
     public HashSet<Point> TailVisitedPositions 
         = new HashSet<Point>() { new Point(0, 0) };
@@ -20,7 +26,7 @@ public class State
     public void ProcessInstruction(string line)
     {
         var bits = line.Split(" ");
-        var movementCount = int.Parse(bits[1]) * -1;
+        var movementCount = int.Parse(bits[1]);
 
         for (int i = 0; i < movementCount; i++)
         {
@@ -40,31 +46,23 @@ public class State
                     break;
             }
 
-            var distance = new Point(Math.Abs(Head.X) - Math.Abs(Tail.X), Math.Abs(Head.Y) - Math.Abs(Tail.Y));
-            var direction = new Point(Head.X - Tail.X, Head.Y - Tail.Y);
-
-            if (!distance.IsTouching())
+            for (var t = 1; t < Rope.Length; t++)
             {
-                //need to move the tail
-                if (Head.X == Tail.X)
-                {
-                    var d = direction.Y < 0 ? direction.Y + 1 : direction.Y - 1;
-                    Tail = Tail with { Y = Tail.Y + d };
-                }
-                else if (Head.Y == Tail.Y)
-                {
-                    var d = direction.X < 0 ? direction.X + 1 : direction.X - 1;
-                    Tail = Tail with { Y = Tail.Y + d };
-                }
-                else //Diagnoal
-                {
-                    //One distance will be 2, one will be 1;
-                    var dX = Math.Abs(direction.X) == 1 ? direction.X : direction.X < 0 ? -1 : 1;
-                    var dY = Math.Abs(direction.Y) == 1 ? direction.Y : direction.Y < 0 ? -1 : 1;
+                var dX = Rope[t-1].X - Rope[t].X;
+                var dY = Rope[t-1].Y - Rope[t].Y;
 
-                    Tail = new Point(Tail.X + dX, Tail.Y + dY);
+                if (Math.Abs(dX) > 1 || Math.Abs(dY) > 1)
+                {
+                    var mX = Math.Sign(dX);
+                    var mY = Math.Sign(dY);
+
+                    Rope[t] = new Point(Rope[t].X + mX, Rope[t].Y + mY);
+
+                    if (t == Rope.Length - 1)
+                    {
+                        TailVisitedPositions.Add(Rope[t]);
+                    }
                 }
-                TailVisitedPositions.Add(Tail);
             }
         }
     }
