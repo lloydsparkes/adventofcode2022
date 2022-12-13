@@ -1,17 +1,17 @@
 ﻿using Common;
 
-public record Monkey2(int Id, Func<int, int> WorryOperation, int TestDivisor, int TestTrueMonkey, int TestFalseMonkey)
+public record Monkey2(long Id, Func<long, long> WorryOperation, long TestDivisor, long TestTrueMonkey, long TestFalseMonkey)
 {
-    public Queue<int> Items { get; } = new Queue<int>();
+    public Queue<long> Items { get; } = new Queue<long>();
     
     public long ItemsInspected { get; set; }
 
-    public void Process(Monkey2[] others)
+    public void Process(Monkey2[] others, long mod)
     {
-        while (Items.TryDequeue(out int item))
+        while (Items.TryDequeue(out long item))
         {
             ItemsInspected++;
-            var newWorry = WorryOperation(item);
+            var newWorry = WorryOperation(item) % mod;
 
             if ((newWorry % TestDivisor) == 0)
             {
@@ -30,13 +30,15 @@ public class Part2 : IDayPartJob
     public object RunPart(string[] inputLines)
     {
         var monkeys = ProcessLines(inputLines);
-        int roundCount = 10000;
+        long roundCount = 10000;
 
-        for (int i = 0; i < roundCount; i++)
+        var mod = monkeys.Aggregate(1L, (mod, m) => mod * m.TestDivisor);
+
+        for (long i = 0; i < roundCount; i++)
         {
             foreach (var m in monkeys)
             {
-                m.Process(monkeys);
+                m.Process(monkeys, mod);
             }
         }
 
@@ -54,27 +56,27 @@ public class Part2 : IDayPartJob
     {
         var monkeys = new List<Monkey2>();
 
-        int id = -1, testDivisor = -1, testTrue = -1, testFalse = -1;
-        int[] items = null;
-        Func<int, int> op = null;
+        long id = -1, testDivisor = -1, testTrue = -1, testFalse = -1;
+        long[] items = null;
+        Func<long, long> op = null;
 
         foreach (var l in inputLines)
         {
             if (l.StartsWith("Monkey"))
             {
-                id = int.Parse(l[7].ToString());
+                id = long.Parse(l[7].ToString());
             }
 
             if (l.Contains("Starting items:"))
             {
-                items = l.Split(":")[1].Split(",").Select(s => s.Trim()).Select(s => int.Parse(s)).ToArray();
+                items = l.Split(":")[1].Split(",").Select(s => s.Trim()).Select(s => long.Parse(s)).ToArray();
             }
 
             if (l.Contains("Operation:"))
             {
                 var log = l.Split("=")[1].Split(" ").Select(s => s.Trim()).Skip(1).ToArray();
 
-                if (int.TryParse(log[2], out int constant))
+                if (long.TryParse(log[2], out long constant))
                 {
                     switch (log[1][0])
                     {
@@ -115,17 +117,17 @@ public class Part2 : IDayPartJob
 
             if (l.Contains("Test:"))
             {
-                testDivisor = int.Parse(l.Split(" ").Last());
+                testDivisor = long.Parse(l.Split(" ").Last());
             }
             
             if (l.Contains("If true:"))
             {
-                testTrue = int.Parse(l.Split(" ").Last());
+                testTrue = long.Parse(l.Split(" ").Last());
             }
             
             if (l.Contains("If false:"))
             {
-                testFalse = int.Parse(l.Split(" ").Last());
+                testFalse = long.Parse(l.Split(" ").Last());
             }
 
             if (string.IsNullOrEmpty(l))
