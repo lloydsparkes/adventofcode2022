@@ -6,24 +6,26 @@ public class Part1 : IDayPartJob
 {
     public object RunPart(string[] inputLines)
     {
-        (var map, var startPoint) = ReadMap(inputLines);
+        (var map, var start, var goal) = ReadMap(inputLines);
+        var routeCostMap = new int[map.GetLength(0), map.GetLength(1)];
 
-        return FindShortestRoute(map, startPoint, 0, new List<Point>());
+        Queue<Point> toCheck = new Queue<Point>(new[] { goal });
+        while (toCheck.Any())
+        {
+            var testPoint = toCheck.Dequeue();
+
+            foreach (var neightbour in GetValidNextPoints(map, testPoint))
+            {
+                if(routeCostMap[neightbour.X, neightbour.Y] > 0) continue;
+                routeCostMap[neightbour.X, neightbour.Y] = routeCostMap[testPoint.X, testPoint.Y] + 1;
+                toCheck.Enqueue(neightbour);
+            }
+        }
+
+        return routeCostMap[start.X, start.Y];
     }
-
-    public int FindShortestRoute(char[,] map, Point sp, int routeLength, List<Point> visited)
-    {
-        if (map[sp.X, sp.Y] == 'E') return routeLength;
-        
-        var pointsToCheck = GetValidPoints(map, sp, visited);
-        if (!pointsToCheck.Any()) return int.MaxValue;
-
-        var newVisited = new List<Point>(visited);
-        newVisited.Add(sp);
-        return pointsToCheck.Select(p => FindShortestRoute(map, p, routeLength + 1, newVisited)).Min();
-    }
-
-    public IEnumerable<Point> GetValidPoints(char[,] map, Point sp, List<Point> visited)
+    
+    public static IEnumerable<Point> GetValidNextPoints(char[,] map, Point sp)
     {
         var silbingPoints = new[]
         {
@@ -32,31 +34,24 @@ public class Part1 : IDayPartJob
             new Point(sp.X + 1, sp.Y),
             new Point(sp.X - 1, sp.Y),
         };
-        char[] charsAllowed;
 
-        if (map[sp.X, sp.Y] == 'S')
-        {
-            charsAllowed = new []{'E', 'a'};
-        }
-        else
-        {
-            charsAllowed = new[] { 'E', map[sp.X, sp.Y], (char)(map[sp.X, sp.Y] + 1) };
-        }
-
-        return silbingPoints.Where(p => InBounds(map, p) && !visited.Contains(p) && charsAllowed.Contains(map[p.X, p.Y]));
+        return silbingPoints.Where(p => 
+            InBounds(map, p)
+            && (map[sp.X, sp.Y]-map[p.X,p.Y]) <= 1);
     }
 
-    public bool InBounds(char[,] map, Point sp)
+    public static bool InBounds(char[,] map, Point sp)
     {
         return (sp.X >= 0 && sp.X < map.GetLength(0))
                && (sp.Y >= 0 && sp.Y < map.GetLength(1));
     }
 
-    public (char[,] map, Point start) ReadMap(string[] inputLines)
+    public static (char[,] map, Point start, Point goal) ReadMap(string[] inputLines)
     {
         var maxX = inputLines.First().Length;
         var maxY = inputLines.Length;
         var startPoint = new Point(0, 0);
+        var goalPoint = new Point(0, 0);
         
         var map = new char[maxX, maxY];
         int y = 0;
@@ -64,12 +59,24 @@ public class Part1 : IDayPartJob
         {
             for (int x = 0; x < line.Length; x++)
             {
-                if (line[x] == 'S') startPoint = new Point(x, y);
-                map[x, y] = line[x];
+                if (line[x] == 'S')
+                {
+                    startPoint = new Point(x, y);
+                    map[x, y] = 'a';
+                }
+                else if (line[x] == 'E')
+                {
+                    goalPoint = new Point(x, y);
+                    map[x, y] = 'z';
+                }
+                else
+                {
+                    map[x, y] = line[x];
+                }
             }
             y++;
         }
 
-        return (map, startPoint);
+        return (map, startPoint, goalPoint);
     }
 }
